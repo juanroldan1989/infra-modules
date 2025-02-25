@@ -1,0 +1,35 @@
+{
+  "title": "Flask Performance",
+  "panels": [
+    {
+      "title": "Request Rate (RPS)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{namespace='default', job='greeter'}[5m]))",
+          "legendFormat": "Requests per Second"
+        }
+      ]
+    },
+    {
+      "title": "Request Duration (ms)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace='default', job='greeter'}[5m])) by (le)) * 1000",
+          "legendFormat": "p95 Latency"
+        }
+      ]
+    },
+    {
+      "title": "HTTP Errors",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{namespace='default', job='greeter', status_code=~'5..'}[5m]))",
+          "legendFormat": "HTTP 5xx Errors"
+        }
+      ]
+    }
+  ]
+}

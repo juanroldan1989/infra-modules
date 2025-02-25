@@ -1,0 +1,15 @@
+{
+  "title": "Flask Application Logs",
+  "panels": [
+    {
+      "title": "Flask Logs",
+      "type": "logs",
+      "targets": [
+        {
+          "expr": "{app=\"greeter\"}",
+          "datasource": "Loki"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: default
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        name: default
+      requirements:
+        - key: "karpenter.k8s.aws/instance-category"
+          operator: In
+          values: ["c", "m", "t"]
+        #- key: "karpenter.k8s.aws/instance-type" # specify instance types directly
+        #  operator: In
+        #  values: ["m5d.xlarge", "c6a.large"]
+        - key: "karpenter.k8s.aws/instance-size"
+          operator: In
+          values: ["medium", "large"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a", "us-east-1b"]
+        - key: karpeneter.sh/capacity-type
+          operator: In
+          values: ["spot", "on-demand"]
+      limits: # this NodePool can keep provisioning nodes until the combined CPU pods requests reaches 100 or memory reaches 100Gi
+        # Reducing these values allows more granular scaling and prevents overcommitment.
+        cpu: 2      # Maximum CPU per node. Reduce from 1000 to allow Karpenter to scale incrementally
+        memory: 4Gi # Maximum memory per node. Reduce from 1000Gi to allow Karpenter to scale incrementally
+  disruption:
+    consolidationPolicy: WhenUnderutilized  # Karpenter consolidates nodes even when they are underutilized, optimizing costs.
+    # consolidationPolicy: WhenEmpty  # Karpenter consolidates when a node does not have any "workload" pods. System Pods and DaemonSets are not considered.
+    # consolidateAfter: 30s  # How long Karpenter waits before consolidating a node.
+    expireAfter: Never

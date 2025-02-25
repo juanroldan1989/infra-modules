@@ -1,0 +1,39 @@
+{
+  "title": "EKS Pod Metrics",
+  "panels": [
+    {
+      "title": "CPU Usage (mCores)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace='default'}[5m])) by (pod)",
+          "legendFormat": "{{ pod }}"
+        }
+      ]
+    },
+    {
+      "title": "Memory Usage (MB)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{namespace='default'}) by (pod) / 1024 / 1024",
+          "legendFormat": "{{ pod }}"
+        }
+      ]
+    },
+    {
+      "title": "Network Traffic (Bytes In/Out)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(container_network_receive_bytes_total{namespace='default'}[5m])",
+          "legendFormat": "{{ pod }} RX"
+        },
+        {
+          "expr": "rate(container_network_transmit_bytes_total{namespace='default'}[5m])",
+          "legendFormat": "{{ pod }} TX"
+        }
+      ]
+    }
+  ]
+}

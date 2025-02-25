@@ -1,0 +1,25 @@
+{
+  "title": "HPA Monitoring",
+  "panels": [
+    {
+      "title": "Current Replicas",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace='default'}",
+          "legendFormat": "{{ hpa }}"
+        }
+      ]
+    },
+    {
+      "title": "CPU Utilization (%)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "kube_pod_container_resource_requests_cpu_cores{namespace='default'} * 100 / kube_pod_container_resource_limits_cpu_cores{namespace='default'}",
+          "legendFormat": "{{ pod }}"
+        }
+      ]
+    }
+  ]
+}

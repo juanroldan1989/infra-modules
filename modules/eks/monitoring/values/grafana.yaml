@@ -1,0 +1,50 @@
+persistence:
+  enabled: false
+  # Verify that the EBS CSI Driver is Installed to use config below
+  # size: 10Gi
+  # storageClassName: gp2
+
+grafana.ini:
+  server:
+    domain: "grafana.example.com"
+    root_url: "https://grafana.example.com"
+
+  auth:
+    disable_login_form: false
+
+  auth.anonymous:
+    enabled: false
+
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+
+service:
+  enabled: false # Change to false if you are using an Ingress
+  type: LoadBalancer
+
+# Best practice is to expose Grafana using an Ingress with an ALB.
+ingress:
+  enabled: true
+  ingressClassName: alb
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
+  hosts:
+    - host: "grafana.example.com"  # Ensure it's a **string** not an object
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: grafana
+              port:
+                number: 80
+
+# Use a LoadBalancer Service (For Internal AWS Access)
+# service:
+#   type: LoadBalancer
+#   annotations:
+#     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
