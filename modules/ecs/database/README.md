@@ -1,4 +1,4 @@
-# Generic Database Module
+# Database Module for ECS Service
 
 ## Introduction
 
@@ -6,14 +6,14 @@ This Terraform module creates an Amazon RDS instance with all necessary configur
 
 to ensure secure and reliable database management for your application.
 
-It includes associated resources such as a security group, subnet group
+It includes associated resources such as a security group, subnet group, IAM roles for ECS task execution
 
 and integration with AWS Secrets Manager for securely managing database credentials.
 
 ## Features
 
 - Creates an RDS instance in a private subnet.
-- Configures a security group to allow access only from a group of IPs or Security Groups.
+- Configures a security group to allow access only from an ECS task.
 - Sets up a subnet group for private subnet placement of the RDS instance.
 - Integrates with AWS Secrets Manager for secure storage of database credentials.
 - Provides IAM roles and policies for ECS tasks to access RDS and Secrets Manager.
@@ -53,7 +53,7 @@ module "database" {
   parameter_group_name    = "default.postgres13"
   vpc_id                  = "vpc-0123456789abcdef0"
   private_subnets         = ["subnet-1234abcd", "subnet-5678efgh"]
-  origin_sg_id            = "sg-origin-id"
+  ecs_task_sg_id          = "sg-ecs-task-id"
   skip_final_snapshot     = false
   publicly_accessible     = false
   storage_type            = "gp2"
@@ -78,13 +78,13 @@ This module provides the following outputs:
 This module assumes the following dependencies are already provisioned:
 
 1. A VPC with private subnets.
-2. An Application with security group (`origin_sg_id`) that allows communication with the RDS instance.
+2. An ECS service with a security group (`ecs_task_sg_id`) that allows communication with the RDS instance.
 
 ## Diagram
 
 ```bash
 +-----------------+       +--------------------+
-|  XYZ XYZ        | ----> |  RDS Security      |
+|  ECS Task       | ----> |  RDS Security      |
 |  (Application)  |       |  Group             |
 +-----------------+       +--------------------+
        |                            |
@@ -97,7 +97,7 @@ This module assumes the following dependencies are already provisioned:
 
 ### Explanation
 
-- `XYZ XYZ`: Represents the containerized application requiring access to the database.
+- `ECS Task`: Represents the containerized application requiring access to the database.
 - `Secrets Manager`: Stores sensitive database credentials securely, accessible only by authorized ECS tasks.
 - `RDS Security Group`: Restricts traffic to the database, allowing only ECS tasks to connect.
 - `RDS Instance`: The PostgreSQL database hosted within a private subnet.
