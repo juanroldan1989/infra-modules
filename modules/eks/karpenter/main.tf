@@ -26,9 +26,10 @@ provider "helm" {
 
 provider "kubectl" {
   apply_retry_count      = 5
-  host                   = data.aws_eks_cluster.eks.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.eks.token
+  load_config_file       = var.use_local_kubeconfig
+  host                   = var.use_local_kubeconfig ? null : data.aws_eks_cluster.eks.endpoint
+  cluster_ca_certificate = var.use_local_kubeconfig ? null : base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
+  token                  = var.use_local_kubeconfig ? null : data.aws_eks_cluster_auth.eks.token
 }
 
 # ------------------------------------------------------------------------

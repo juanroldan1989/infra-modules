@@ -34,3 +34,9 @@ variable "eks_name" {
   description = "The name of the EKS cluster."
   type        = string
 }
+
+variable "use_local_kubeconfig" {
+  description = "If true, use local (~/.kube/config) file for authentication. If false, use token-based EKS access (e.g. for CI)."
+  type        = bool
+  default     = true
+}
