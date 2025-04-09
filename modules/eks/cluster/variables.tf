@@ -47,5 +47,5 @@ variable "eks_name" {
 
 variable "eks_version" {
   type    = string
-  default = "1.30"
+  default = "1.32" # End Of Standard Support: 21/03/2026 / End Of Extended Support: 21/03/2027
 }

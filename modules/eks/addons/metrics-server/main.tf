@@ -41,14 +41,6 @@ provider "kubernetes" {
   host                   = data.aws_eks_cluster.eks.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.eks.token
-
-  # Configures an alternative authentication mechanism using AWS CLI.
-  # This is helpful for dynamic authentication workflows where the AWS CLI is used to obtain a token.
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--cluster-name", data.aws_eks_cluster.eks.id]
-    command     = "aws"
-  }
 }
 
 # ------------------------------------------------------------------------
@@ -67,6 +59,17 @@ resource "helm_release" "metrics_server" {
 
   # The values file allows for customizing the Helm chart deployment configuration.
   values = [file("${path.module}/values/metrics-server.yaml")]
+
+  # Adding toleration for CriticalAddonsOnly taint
+  set {
+    name  = "tolerations[0].key"
+    value = "CriticalAddonsOnly"
+  }
+
+  set {
+    name  = "tolerations[0].operator"
+    value = "Exists"
+  }
 
   depends_on = [var.eks_node_group_general]
 }
