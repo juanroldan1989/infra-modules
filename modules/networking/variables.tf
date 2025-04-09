@@ -21,6 +21,30 @@ variable "env" {
 # NETWORKING VARIABLES
 # ------------------------------------------------------------------------
 
+variable "cidr" {
+  description = "values for the VPC CIDR block"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "private_subnets" {
+  description = "The IDs of the private subnets."
+  type        = list(string)
+  default     = ["10.0.0.0/19", "10.0.32.0/19"]
+}
+
+variable "public_subnets" {
+  description = "The IDs of the public subnets."
+  type        = list(string)
+  default     = ["10.0.64.0/19", "10.0.96.0/19"]
+}
+
+variable "intra_subnets" {
+  description = "The IDs of the intra subnets."
+  type        = list(string)
+  default     = ["10.0.128.0/19", "10.0.160.0/19"]
+}
+
 variable "zone1" {
   type    = string
   default = "us-east-1a"

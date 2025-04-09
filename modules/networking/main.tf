@@ -3,13 +3,12 @@ module "vpc" {
   version = "5.13.0"
 
   name = "${var.env}-${var.aws_region}-vpc-main"
-  cidr = "10.0.0.0/16"
+  cidr = var.cidr
 
-  # Define AZs dynamically based on input variables
   azs             = [var.zone1, var.zone2]
-  private_subnets = ["10.0.0.0/19", "10.0.32.0/19"]
-  public_subnets  = ["10.0.64.0/19", "10.0.96.0/19"]
-  intra_subnets   = ["10.0.128.0/19", "10.0.160.0/19"]
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
+  intra_subnets   = var.intra_subnets
 
   # Enable NAT gateway for private subnets
   enable_nat_gateway     = true
