@@ -49,3 +49,9 @@ variable "eks_version" {
   type    = string
   default = "1.32" # End Of Standard Support: 21/03/2026 / End Of Extended Support: 21/03/2027
 }
+
+variable "instance_types" {
+  description = "The instance types for the EKS managed node groups."
+  type        = list(string)
+  default     = ["t3.small"] # Enough for ArgoCD + ESO + ALB Controller
+}
