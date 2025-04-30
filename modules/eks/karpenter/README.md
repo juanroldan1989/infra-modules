@@ -4,7 +4,9 @@ This module provisions Karpenter within an existing EKS Cluster, allowing for dy
 
 ## Overview
 
-This repository contains the Karpenter setup for auto-scaling nodes in an Amazon EKS cluster. The configuration ensures efficient node provisioning and cost optimization by utilizing both on-demand and spot instances.
+This repository contains Karpenter setup for auto-scaling nodes in an Amazon EKS cluster.
+
+The configuration ensures **efficient node provisioning and cost optimization** by utilizing both **on-demand** and **spot instances**.
 
 ## Directory Structure
 
@@ -21,54 +23,54 @@ karpenter/
 
 ## Key Features
 
-- Dynamic Node Provisioning: Automatically scales nodes based on pending workloads.
+- **Dynamic Node Provisioning:** Automatically scales nodes based on pending workloads.
 
-- Optimized Cost Management: Utilizes a combination of on-demand and spot instances.
+- **Optimized Cost Management:** Utilizes a combination of on-demand and spot instances.
 
-- Efficient Pod Packing: Ensures nodes are efficiently utilized, reducing waste.
+- **Efficient Pod Packing:** Ensures nodes are efficiently utilized, reducing waste.
 
-- Respects AWS vCPU Quotas: Configured to prevent hitting quota limits and ensure uninterrupted scaling.
+- **Respects AWS vCPU Quotas:** Configured to prevent hitting quota limits and ensure uninterrupted scaling.
 
-- Flexible NodePool Configuration: Supports instance size selection (medium, large) and various instance categories (c, m, t).
+- **Flexible NodePool Configuration:** Supports instance size selection (medium, large) and various instance categories (c, m, t).
 
 
 ## Module Components
 
-1. EKS Cluster Authentication & Helm Provider
+1. EKS Cluster Authentication & Helm Provider:
 
-Uses aws_eks_cluster and aws_eks_cluster_auth data sources to fetch cluster details.
+Uses `aws_eks_cluster` and `aws_eks_cluster_auth` data sources to fetch cluster details.
 
-Configures helm and kubectl providers to interact with the EKS cluster.
+Configures `helm` and `kubectl` providers to interact with the EKS cluster.
 
-2. Karpenter IAM and Permissions
+2. Karpenter IAM and Permissions:
 
-Uses terraform-aws-modules/eks/aws//modules/karpenter to configure necessary IAM roles.
+Uses `terraform-aws-modules/eks/aws//modules/karpenter` to configure necessary IAM roles.
 
 Enables pod identity association.
 
-Grants AmazonSSMManagedInstanceCore policy to the Karpenter node IAM role.
+Grants `AmazonSSMManagedInstanceCore` policy to the Karpenter node IAM role.
 
-3. Karpenter Helm Deployment
+3. Karpenter Helm Deployment:
 
-Deploys Karpenter using the Helm chart from the public Amazon ECR.
+Deploys `Karpenter` using the `Helm` chart from the public Amazon ECR.
 
-Ensures CriticalAddonsOnly taints are tolerated.
+Ensures `CriticalAddonsOnly` taints are tolerated.
 
 Integrates with the EKS cluster's endpoint and interruption queue.
 
-4. Karpenter NodePool Configuration
+4. Karpenter NodePool Configuration:
 
 Defines which instances Karpenter can provision.
 
-Uses karpenter.k8s.aws/instance-category to allow c, m, and t families.
+Uses `karpenter.k8s.aws/instance-category` to allow c, m, and t families.
 
-Limits instance sizes to medium and large.
+Limits instance sizes to **medium** and **large**.
 
-Supports on-demand and spot instances.
+Supports **on-demand** and **spot** instances.
 
-Configured to scale nodes incrementally with a maximum of 2 vCPUs and 4Gi memory per node.
+Configured to scale nodes incrementally with a maximum of **2 vCPUs and 4Gi memory per node**.
 
-5. Karpenter EC2NodeClass (AWSNodeTemplate)
+5. Karpenter `EC2NodeClass` (`AWSNodeTemplate`):
 
 Defines which subnets and security groups Karpenter should use.
 
@@ -84,7 +86,7 @@ Uses the pause container image to simulate workloads without consuming resources
 
 ### Default AWS vCPU Quotas
 
-- AWS applies default vCPU quotas for each instance category (e.g., 16 vCPUs for new accounts).
+- AWS applies default vCPU quotas for each instance category (e.g.: 16 vCPUs for new accounts).
 
 - If Karpenter hits this limit, new nodes may fail to launch with a VcpuLimitExceeded error.
 
@@ -108,7 +110,7 @@ Uses the pause container image to simulate workloads without consuming resources
 
 ### Karpenter Pods
 
-- Karpenter deploys 2 pods by default for high availability.
+- Karpenter **deploys 2 pods by default** for high availability.
 
 - Each node runs one Karpenter pod.
 
@@ -116,7 +118,7 @@ Uses the pause container image to simulate workloads without consuming resources
 
 ### Instance Selection
 
-- By default, small and medium instance sizes are prioritized to improve bin-packing.
+- By default, **small and medium instance sizes are prioritized** to improve bin-packing.
 
 - If the cluster requires more vCPUs, consider adjusting NodePool limits to allow larger instances.
 
@@ -141,19 +143,19 @@ terragrunt apply
 kubectl get pods -n kube-system | grep karpenter
 ```
 
-4. Test autoscaling by deploying the `inflate` workload:
+5. Test autoscaling by deploying the `inflate` workload:
 
 ```bash
 kubectl scale deployment inflate --replicas=50
 ```
 
-5. Check if new nodes are provisioned:
+6. Check if new nodes are provisioned:
 
 ```bash
 kubectl get nodes
 ```
 
-6. Check `Karpenter` logs for more information in provisioning:
+7. Check `Karpenter` logs for more information in provisioning:
 
 ```bash
 kubectl logs -f -n kube-system -l app.kubernetes.io/name=karpenter
@@ -166,11 +168,9 @@ kubectl logs -f -n kube-system -l app.kubernetes.io/name=karpenter
 - **Set Realistic Limits**: Reduce **NodePool CPU/memory limits** for **gradual scaling** instead of provisioning large nodes.
 - **Enable Consolidation**: Use `WhenUnderutilized` consolidation to **reduce costs** by terminating underutilized nodes.
 
----
-
 ## Troubleshooting
 
-### 1️⃣ Karpenter is not provisioning nodes
+### Karpenter is not provisioning nodes
 
 **Check if pods are pending:**
 
@@ -184,11 +184,12 @@ kubectl get pods -A | grep Pending
 kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter
 ```
 
-### 2️⃣ Some pods remain pending despite available nodes
+### Some pods remain pending despite available nodes
 
 - **Check instance-type requirements**: The `NodePool` might not match requested pod resources.
 - **Check vCPU quotas**: You may be exceeding AWS vCPU limits.
 
-### 3️⃣ Nodes are not terminating after scaling down
+### Nodes are not terminating after scaling down
+
 - **Ensure consolidation is enabled** (`WhenUnderutilized` or `WhenEmpty`).
 - **Check node taints**: Some system pods might prevent node termination.

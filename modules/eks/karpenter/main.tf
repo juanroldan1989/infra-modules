@@ -44,6 +44,7 @@ data "aws_ecrpublic_authorization_token" "token" {}
 
 module "karpenter" {
   source = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "20.35.0" # Always use modules with versions to match AWS provider requirements: https://github.com/terraform-aws-modules/terraform-aws-eks/tree/v20.35.0/modules/karpenter#requirements
 
   cluster_name = var.eks_name
 
