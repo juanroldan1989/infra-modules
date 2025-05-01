@@ -15,7 +15,11 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - name: inflate
-          image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Hello from Karpenter node!"
+          ports:
+            - containerPort: 5678
           resources:
             # Instead of 1 big pod (1 vCPU, 2Gi RAM)
             # More replicas improve resilience: If one pod fails, the service still runs.
@@ -26,3 +30,15 @@ spec:
             limits:
               cpu: "1"
               memory: "2Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inflate
+spec:
+  selector:
+    app: inflate
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5678
