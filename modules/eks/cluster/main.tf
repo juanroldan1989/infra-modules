@@ -9,7 +9,9 @@ module "eks" {
 
   cluster_addons = {
     coredns                = {}
-    eks-pod-identity-agent = {}
+    eks-pod-identity-agent = {
+      addon_version = "v1.2.0-eksbuild.1"
+    }
     kube-proxy             = {}
     vpc-cni                = {}
   }

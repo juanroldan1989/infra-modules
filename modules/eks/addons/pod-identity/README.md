@@ -28,3 +28,22 @@ aws eks describe-addon-versions --region <region-name> --addon-name eks-pod-iden
   ]
 }
 ```
+
+## Addon definition
+
+Addon defined within `EKS` cluster module itself:
+
+```bash
+...
+
+  cluster_addons = {
+    coredns                = {}
+    eks-pod-identity-agent = {
+      addon_version = "v1.2.0-eksbuild.1"
+    }
+    kube-proxy             = {}
+    vpc-cni                = {}
+  }
+
+...
+```
