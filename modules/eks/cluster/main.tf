@@ -39,6 +39,10 @@ module "eks" {
           effect = "NO_SCHEDULE"
         },
       }
+
+      tags = {
+        Name = "${var.env}-${var.eks_name}-eks-node-group-general"
+      }
     }
   }
 
@@ -51,9 +55,5 @@ module "eks" {
     # security group that Karpenter should utilize with the following tag
     # (i.e. - at most, only one security group should have this tag in your account)
     "karpenter.sh/discovery" = "${var.env}-${var.eks_name}"
-  }
-
-  tags = {
-    Name = "${var.env}-${var.eks_name}-eks-node-group-general"
   }
 }
