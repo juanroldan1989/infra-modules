@@ -1,8 +1,13 @@
+locals {
+  cluster_name    = "${var.env}-${var.eks_name}"
+  node_group_name = "${local.cluster_name}-general"
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.24.0"
 
-  cluster_name    = "${var.env}-${var.eks_name}"
+  cluster_name    = local.cluster_name
   cluster_version = var.eks_version
 
   cluster_endpoint_public_access  = true
@@ -21,7 +26,7 @@ module "eks" {
   control_plane_subnet_ids = var.control_plane_subnet_ids
 
   eks_managed_node_groups = {
-    general = {
+    (local.node_group_name) = {
       # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
       ami_type       = "AL2023_x86_64_STANDARD"
       instance_types = var.instance_types
@@ -41,7 +46,7 @@ module "eks" {
       }
 
       tags = {
-        Name = "${var.env}-${var.eks_name}-eks-node-group-general"
+        Name = local.node_group_name
       }
     }
   }
@@ -54,6 +59,6 @@ module "eks" {
     # NOTE - if creating multiple security groups with this module, only tag the
     # security group that Karpenter should utilize with the following tag
     # (i.e. - at most, only one security group should have this tag in your account)
-    "karpenter.sh/discovery" = "${var.env}-${var.eks_name}"
+    "karpenter.sh/discovery" = local.cluster_name
   }
 }

@@ -53,5 +53,5 @@ variable "eks_version" {
 variable "instance_types" {
   description = "The instance types for the EKS managed node groups."
   type        = list(string)
-  default     = ["t3.small"] # Enough for ArgoCD + ESO + ALB Controller
+  default     = ["t3.medium"] # Minimum for ArgoCD + ESO + ALB Controller + Prometheus + Grafana
 }
