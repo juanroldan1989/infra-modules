@@ -55,3 +55,9 @@ variable "instance_types" {
   type        = list(string)
   default     = ["t3.medium"] # Minimum for ArgoCD + ESO + ALB Controller + Prometheus + Grafana
 }
+
+variable "public_cidrs" {
+  description = "The CIDRs that are allowed to access the EKS cluster endpoint."
+  type        = list(string)
+  default     = []
+}

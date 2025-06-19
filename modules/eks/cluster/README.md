@@ -31,3 +31,26 @@ By defining intra_subnets, the EKS control plane will be provisioned in these su
   but can be interrupted by AWS with a two-minute warning if capacity is reclaimed.
 - Spot Instances are suitable for workloads that can tolerate interruptions,
   such as stateless, fault-tolerant, or batch processing tasks.
+
+## `variables.tf`
+
+### `public_cidrs`
+
+To provision this module and defining a secure access to the EKS cluster,
+
+we need to define a list of CIRDs that are allowed to access the EKS cluster endpoint.
+
+We can do this within `terragrunt.hcl` file when instantiating this module:
+
+```bash
+locals {
+  my_ip_cidr   = "${trimspace(run_cmd("curl", "-s", "https://checkip.amazonaws.com"))}/32"
+  public_cidrs = [local.my_ip_cidr]
+}
+
+inputs = {
+...
+
+  public_cidrs = local.public_cidrs
+}
+```
