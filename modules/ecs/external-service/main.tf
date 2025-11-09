@@ -21,9 +21,9 @@ resource "aws_ecs_service" "main" {
   tags                 = local.service_tags
 
   network_configuration {
-    subnets          = var.subnet_ids
+    subnets          = var.subnet_ids  # private subnets for ECS tasks
     security_groups  = [aws_security_group.sg_ecs_task_alb.id]
-    assign_public_ip = true
+    assign_public_ip = false  # No public IP needed in private subnets with NAT
   }
 
   load_balancer {
@@ -101,19 +101,31 @@ resource "aws_security_group" "sg_ecs_task_alb" {
   description = "Allow inbound traffic only from ALB to ECS Cluster."
   vpc_id      = var.vpc_id
 
-  ingress {
-    protocol        = "tcp"
-    from_port       = var.alb_port
-    to_port         = var.alb_port
-    security_groups = [aws_security_group.sg_alb.id]
-  }
-
   egress {
+    description = "All outbound traffic for container operations"
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name        = "${var.env}-${var.aws_region}-${var.app_name}-sg-ecs-task"
+    Application = var.app_name
+    Service     = "ECS Security Group"
+    Purpose     = "ECS Task Network Security"
+  }
+}
+
+# Separate ingress rule to break circular dependency
+resource "aws_security_group_rule" "ecs_task_ingress_from_alb" {
+  type                     = "ingress"
+  description              = "Allow traffic from ALB to container port"
+  from_port                = var.container_port
+  to_port                  = var.container_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.sg_alb.id
+  security_group_id        = aws_security_group.sg_ecs_task_alb.id
 }
 
 # ------------------------------------------------------------------------
@@ -134,7 +146,7 @@ resource "aws_lb" "alb_ecs" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_alb.id]
-  subnets            = var.subnet_ids
+  subnets            = var.alb_subnet_ids  # public subnets for internet-facing ALB
   tags               = local.alb_tags
 }
 
@@ -159,13 +171,23 @@ resource "aws_security_group" "sg_alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    description = "All egress traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  tags = {
+    Name        = "${var.env}-${var.aws_region}-${var.app_name}-sg-alb"
+    Application = var.app_name
+    Service     = "ALB Security Group"
+    Purpose     = "Application Load Balancer Network Security"
   }
+}
+
+# Separate egress rule to break circular dependency
+resource "aws_security_group_rule" "alb_egress_to_ecs_tasks" {
+  type                     = "egress"
+  description              = "ALB to ECS tasks communication"
+  from_port                = var.container_port
+  to_port                  = var.container_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.sg_ecs_task_alb.id
+  security_group_id        = aws_security_group.sg_alb.id
 }
 
 resource "aws_lb_listener" "alb_listener_http" {
