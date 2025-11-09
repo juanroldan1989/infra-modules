@@ -31,7 +31,7 @@ mkdir networking && cd networking
 
 ```bash
 include "root" {
-  path   = find_in_parent_folders()
+  path   = find_in_parent_folders("root.hcl")
   expose = true
 }
 
@@ -46,7 +46,7 @@ inputs = {
   env            = include.root.locals.env
 
   # Custom module-specific inputs
-  eks_name = "none"
+  eks_name = "cluster-a"
 }
 ```
 
