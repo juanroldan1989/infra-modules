@@ -6,6 +6,10 @@ output "service_url" {
   value = aws_lb.alb_ecs.dns_name
 }
 
+output "alb_zone_id" {
+  value = aws_lb.alb_ecs.zone_id
+}
+
 output "log_group_name" {
   value = aws_cloudwatch_log_group.main.name
 }
