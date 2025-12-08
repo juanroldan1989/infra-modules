@@ -218,11 +218,129 @@ The Grafana container comes with the CloudWatch plugin pre-installed. Add a data
 
 Import pre-built dashboards for ECS monitoring:
 
+**Option 1: Use Verified Dashboard IDs**
+
 1. Go to **Dashboards** → **Import**
-2. Use these dashboard IDs:
-   - **11265** - ECS Cluster Monitoring
+2. Use these working dashboard IDs:
+   - **11265** - ECS Cluster Monitoring (Container Insights)
    - **551** - AWS CloudWatch Browser
-   - **14592** - AWS ECS Task Metrics
+
+**Option 2: Create Custom ECS Dashboard**
+
+If public dashboards don't work, create a custom dashboard:
+
+1. Go to **Dashboards** → **New Dashboard**
+2. Click **Add visualization**
+3. Select your CloudWatch datasource
+4. Add these useful queries:
+
+**ECS Service CPU Usage:**
+```yaml
+Namespace: AWS/ECS
+Metric: CPUUtilization
+Dimensions:
+  - ServiceName: your-service-name
+  - ClusterName: your-cluster-name
+```
+
+**ECS Service Memory Usage:**
+```yaml
+Namespace: AWS/ECS
+Metric: MemoryUtilization
+Dimensions:
+  - ServiceName: your-service-name
+  - ClusterName: your-cluster-name
+```
+
+**Running Task Count:**
+```yaml
+Namespace: AWS/ECS
+Metric: RunningTaskCount
+Dimensions:
+  - ServiceName: your-service-name
+  - ClusterName: your-cluster-name
+```
+
+**ALB Response Time:**
+```yaml
+Namespace: AWS/ApplicationELB
+Metric: TargetResponseTime
+Dimensions:
+  - LoadBalancer: app/your-alb-name/...
+  - TargetGroup: targetgroup/your-tg-name/...
+```
+
+**ALB Request Count:**
+```yaml
+Namespace: AWS/ApplicationELB
+Metric: RequestCount
+Dimensions:
+  - LoadBalancer: app/your-alb-name/...
+```
+
+**Option 3: Import from JSON**
+
+Save this as a `.json` file and import it:
+
+```json
+{
+  "dashboard": {
+    "title": "ECS Service Monitoring",
+    "panels": [
+      {
+        "title": "CPU Utilization",
+        "type": "graph",
+        "datasource": "CloudWatch",
+        "targets": [
+          {
+            "namespace": "AWS/ECS",
+            "metricName": "CPUUtilization",
+            "dimensions": {
+              "ServiceName": "$service",
+              "ClusterName": "$cluster"
+            },
+            "statistics": ["Average"],
+            "period": "300"
+          }
+        ]
+      },
+      {
+        "title": "Memory Utilization",
+        "type": "graph",
+        "datasource": "CloudWatch",
+        "targets": [
+          {
+            "namespace": "AWS/ECS",
+            "metricName": "MemoryUtilization",
+            "dimensions": {
+              "ServiceName": "$service",
+              "ClusterName": "$cluster"
+            },
+            "statistics": ["Average"],
+            "period": "300"
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "cluster",
+          "type": "query",
+          "datasource": "CloudWatch",
+          "query": "dimension_values(AWS/ECS, CPUUtilization, ClusterName)"
+        },
+        {
+          "name": "service",
+          "type": "query",
+          "datasource": "CloudWatch",
+          "query": "dimension_values(AWS/ECS, CPUUtilization, ServiceName, {\"ClusterName\":\"$cluster\"})"
+        }
+      ]
+    }
+  }
+}
+```
 
 Or create custom dashboards using CloudWatch metrics:
 - `AWS/ECS` namespace for cluster/service metrics
