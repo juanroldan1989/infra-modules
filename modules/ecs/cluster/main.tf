@@ -1,6 +1,9 @@
+terraform {
+  required_version = ">= 1.0"
+}
+
 module "ecs" {
-  source  = "terraform-aws-modules/ecs/aws"
-  version = "~> 4.1.3"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-ecs.git?ref=e7647af6055b50b49007ec4d60fb49227bbfd449" # version 4.1.3
 
   cluster_name = "${var.env}-${var.aws_region}-${var.cluster_name}"
 

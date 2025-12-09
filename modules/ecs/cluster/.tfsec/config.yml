@@ -1,0 +1,24 @@
+# TFSec Configuration for ECS Cluster Module
+# https://aquasecurity.github.io/tfsec/latest/guides/configuration/
+
+# Exclude specific checks (examples - adjust based on your needs)
+exclude:
+  # Example: Exclude if you're using AWS managed keys instead of CMK
+  # - aws-ecs-enable-container-insight
+
+  # Example: Exclude if public ECR is required
+  # - aws-ecr-no-public-access
+
+# Minimum severity level to report
+severity: LOW
+
+# Custom checks (if needed)
+# custom_checks:
+#   - check_id: "CUSTOM-001"
+#     description: "Custom check for ECS cluster"
+
+# Configure specific rules
+# rules:
+#   aws-ecs-enable-container-insight:
+#     enabled: true
+#     severity: HIGH

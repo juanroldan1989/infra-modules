@@ -1,0 +1,29 @@
+# Checkov Configuration for ECS Cluster Module
+# https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html
+
+# Skip specific checks (examples - adjust based on your needs)
+skip-check:
+  # Example: Skip if you don't need encryption at rest for CloudWatch logs
+  # - CKV_AWS_158  # Ensure CloudWatch log groups are encrypted
+
+  # Example: Skip if you're using default VPC
+  # - CKV2_AWS_12  # Ensure ECS cluster has container insights enabled
+
+# Compact output for cleaner CI/CD logs
+compact: true
+
+# Framework to scan
+framework:
+  - terraform
+
+# Output format
+output: cli
+
+# Quiet mode (reduce verbosity)
+quiet: true
+
+# Download external modules
+download-external-modules: false
+
+# Soft fail mode (exit code 0 even if checks fail) - set to true for gradual adoption
+# soft-fail: false
