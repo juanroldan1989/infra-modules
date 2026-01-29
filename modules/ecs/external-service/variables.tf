@@ -56,7 +56,7 @@ variable "desired_count" {
 variable "launch_type" {
   description = "The launch type"
   type        = string
-  default     = "FARGATE"
+  default     = "FARGATE_SPOT" # Use FARGATE_SPOT for cost savings. Use FARGATE for standard pricing.
 }
 
 variable "container_name" {
