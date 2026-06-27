@@ -6,6 +6,22 @@ data "http" "my_public_ip" {
 
 locals {
   mgmt_cluster_public_ip_cidr = "${trimspace(data.http.my_public_ip.response_body)}/32"
+  node_pools = concat(
+    tonumber(var.node_count) > 0 ? [
+      {
+        label      = "${var.cluster_name}-pool"
+        size       = var.node_type
+        node_count = tonumber(var.node_count)
+      }
+    ] : [],
+    tonumber(var.gpu_node_count) > 0 ? [
+      {
+        label      = "${var.cluster_name}-gpu-pool"
+        size       = var.gpu_node_type
+        node_count = tonumber(var.gpu_node_count)
+      }
+    ] : []
+  )
 }
 
 resource "civo_network" "cluster" {
@@ -65,10 +81,21 @@ resource "civo_kubernetes_cluster" "cluster" {
   firewall_id        = civo_firewall.cluster.id
   kubernetes_version = var.k8s_version
 
-  pools {
-    label      = "${var.cluster_name}-pool"
-    size       = var.node_type
-    node_count = tonumber(var.node_count)
+  dynamic "pools" {
+    for_each = local.node_pools
+
+    content {
+      label      = pools.value.label
+      size       = pools.value.size
+      node_count = pools.value.node_count
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = length(local.node_pools) > 0
+      error_message = "At least one CPU or GPU node must be requested."
+    }
   }
 }
 
