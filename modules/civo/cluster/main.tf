@@ -124,11 +124,14 @@ resource "kubernetes_secret_v1" "argocd_cluster_secret" {
   metadata {
     name      = var.cluster_name
     namespace = "argocd"
-    labels = {
-      "argocd.argoproj.io/secret-type" = "cluster"
-      "workload"                       = "true"
-      "cluster"                        = var.cluster_name
-    }
+    labels = merge(
+      {
+        "argocd.argoproj.io/secret-type" = "cluster"
+        "workload"                       = "true"
+        "cluster"                        = var.cluster_name
+      },
+      tonumber(var.gpu_node_count) > 0 ? { "gpu" = "true" } : {}
+    )
   }
   data = {
     name             = var.cluster_name

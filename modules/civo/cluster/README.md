@@ -13,6 +13,7 @@ The module supports CPU-only, GPU-only, and mixed CPU/GPU node pool layouts. GPU
 - Provisions a Civo Kubernetes cluster with dynamic CPU and GPU node pools.
 - Supports GPU node pools for LLM, AI, and ML workloads.
 - Registers the workload cluster in Argo CD using a Kubernetes Secret.
+- Labels GPU-capable Argo CD clusters with `gpu=true` when `gpu_node_count` is greater than zero.
 - Stores the raw kubeconfig in the management cluster for administrative access.
 - Copies AWS credentials into the workload cluster for External Secrets Operator.
 - Validates node counts and requires at least one CPU or GPU node.
@@ -24,7 +25,7 @@ The module supports CPU-only, GPU-only, and mixed CPU/GPU node pool layouts. GPU
 | `civo_network.cluster` | Dedicated Civo network for the Kubernetes cluster. |
 | `civo_firewall.cluster` | Firewall rules for ingress, Kubernetes API access, SSH, and egress. |
 | `civo_kubernetes_cluster.cluster` | Managed Civo Kubernetes cluster with CPU and/or GPU node pools. |
-| `kubernetes_secret_v1.argocd_cluster_secret` | Argo CD cluster registration Secret in the management cluster. |
+| `kubernetes_secret_v1.argocd_cluster_secret` | Argo CD cluster registration Secret in the management cluster, including workload and optional GPU labels. |
 | `kubernetes_secret_v1.cluster_secret` | Raw kubeconfig Secret for later administrative access. |
 | `kubernetes_namespace_v1.external_secrets` | `external-secrets` namespace in the workload cluster. |
 | `kubernetes_secret_v1.aws_creds` | AWS credentials copied into the workload cluster for ESO. |
@@ -43,6 +44,30 @@ module "civo_cluster" {
   gpu_node_count  = "1"
   gpu_node_type   = "g4g.kube.small"
 }
+```
+
+### Argo CD Cluster Labels
+
+The module registers each workload cluster in Argo CD using a cluster Secret. The Secret always receives these labels:
+
+```yaml
+argocd.argoproj.io/secret-type: cluster
+workload: "true"
+cluster: <cluster_name>
+```
+
+When `gpu_node_count` is greater than zero, the module also adds:
+
+```yaml
+gpu: "true"
+```
+
+The platform repository can use this label to target GPU-only add-ons, such as the NVIDIA GPU Operator, through an Argo CD ApplicationSet selector:
+
+```yaml
+matchLabels:
+  workload: "true"
+  gpu: "true"
 ```
 
 ### Find Selectable GPU Sizes
@@ -177,5 +202,6 @@ $3.580000 per hr
 Management cluster outputs:
 
   Argo CD cluster Secret  --->  registers workload cluster
+                           --->  adds gpu=true when gpu_node_count > 0
   Kubeconfig Secret       --->  stores raw kubeconfig for admin use
 ```
